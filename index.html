@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<head>
+    <title>拟态化计算器</title>
+    <link rel="stylesheet" href="index.css">
+    <script src="vue.js"></script>
+</head>
+<body>
+    <div id = "app">
+        <div class="calculator">
+            <div class="result grid-control">
+                <div class="display">
+                    {{equation}}
+                </div>
+            </div>
+            <button style="grid-area: ac;" @click="clear">AC</button>
+            <button style="grid-area: plus-add;" @click="calculateToggle">+/-</button>
+            <button style="grid-area: percent;" @click="calculatePercentage">%</button>
+            <button style="grid-area: add;"@click="append('+')">+</button>
+            <button style="grid-area: divide;"@click="append('/')">/</button>
+            <button style="grid-area: minus;"@click="append('-')">-</button>
+            <button style="grid-area: multiply;"@click="append('*')">*</button>
+            <button style="grid-area: equal;"@click="calculate">=</button>
+            <button style="grid-area: number-1;"@click="append(1)">1</button>
+            <button style="grid-area: number-2;"@click="append(2)">2</button>
+            <button style="grid-area: number-3;"@click="append(3)">3</button>
+            <button style="grid-area: number-4;"@click="append(4)">4</button>
+            <button style="grid-area: number-5;" @click="append(5)">5</button>
+            <button style="grid-area: number-6;" @click="append(6)">6</button>
+            <button style="grid-area: number-7;" @click="append(7)">7</button>
+            <button style="grid-area: number-8;" @click="append(8)">8</button>
+            <button style="grid-area: number-9;" @click="append(9)">9</button>
+            <button style="grid-area: number-0;" @click="append(0)">0</button>
+            <button style="grid-area: dot;" @click="append('.')">.</button>
+        </div>
+    </div>
+    <script>
+        new Vue({
+            el: "#app",
+            data: {
+                equation: '0',
+                isDecimalAdded: false,  //用来判断是否已输入了小数点
+                isOperatorAdded: false, //用来判断是否已点击了运算符号
+                isStarted: false,
+                isCal: false,  //用来判断前一个操作是否为点击=
+            },
+            methods: {
+                // 判断运算符是否为加减乘除
+                isOperator(character) {
+                    return ['+', '-', '*', '/'].indexOf(character) > -1;
+                },
+                // 点击的为数字或者运算符
+                append(character) {
+                    if(this.equation == '0' && !this.isOperator(character)) {
+                        if(character == '.') {
+                            isDecimalAdded = true;
+                            this.equation += '' + character;
+                        }else {
+                            this.equation = '' + character;
+                        }
+
+                        this.isStarted = true;
+                        return ;
+                    }
+                    if(!this.isOperator(character)) {
+                        if(this.isCal) {
+                            this.equation = '';
+                        }
+                        if(this.isDecimalAdded == true && character == '.') {
+                            return ;
+                        }
+                        if(character == '.') {
+                            this.isDecimalAdded = true;
+                            this.isOperatorAdded = true;    //小数点后不可直接输入运算符
+                        }else {
+                            this.isOperatorAdded = false;
+                        }
+                        // 点击的为数字，可以一直累加
+                        this.equation += '' + character;
+                    }
+                    if(this.isOperator(character) && !this.isOperatorAdded) {
+                        this.equation += '' + character;
+                        this.isDecimalAdded = false;
+                        this.isOperatorAdded = true;
+                    }
+                    this.isCal = false;
+                },
+                // 点击等于符号
+                calculate() {
+                    let ans = eval(this.equation);
+                    this.equation = (ans < 1.0e9 ? parseFloat(ans.toFixed(9)) : ans.toExponential(3)).toString();
+                    this.isDecimalAdded = false;  
+                    this.isOperatorAdded = false; 
+                    this.isStarted = false;
+                    this.isCal = true;
+                },
+                // 点击正负符号
+                calculateToggle() {
+                    // if(this.isOperatorAdded || !this.isStarted) {
+                    //     return ;
+                    // }
+                    let op = ['+', '-', '*', '/'];
+                    for(let i = 0; i < 4; i++) {
+                        if(this.equation.indexOf(op[i]) > -1) {
+                            return ;
+                        }
+                    }
+                    this.equation = this.equation + '*-1';
+                    this.calculate();
+                },
+                // 点击百分比符号
+                calculatePercentage() {
+                    // if(this.isOperatorAdded || !this.isStarted) {
+                    //     return ;
+                    // }
+                    let op = ['+', '-', '*', '/'];
+                    for(let i = 0; i < 4; i++) {
+                        if(this.equation.indexOf(op[i]) > -1) {
+                            return ;
+                        }
+                    }
+                    this.equation = this.equation + '*0.01';
+                    this.calculate();
+                },
+                // 点击AC清除
+                clear() {
+                    this.equation = '0';
+                    this.isDecimalAdded = false;  
+                    this.isOperatorAdded = false; 
+                    this.isStarted = false;
+                }
+            }
+        })
+    </script>
+    
+</body>
+</html>
